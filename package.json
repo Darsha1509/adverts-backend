@@ -1,0 +1,29 @@
+{
+  "name": "adverts-backend",
+  "version": "0.0.0",
+  "description": "The adverts backend application.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "nodemon": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Darsha1509/adverts-backend.git"
+  },
+  "author": "Darya Kokorina",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Darsha1509/adverts-backend/issues"
+  },
+  "homepage": "https://github.com/Darsha1509/adverts-backend#readme",
+  "devDependencies": {
+    "eslint": "5.12.1",
+    "eslint-config-airbnb-base": "13.1.0",
+    "eslint-plugin-import": "2.16.0",
+    "eslint-plugin-prettier": "3.0.1",
+    "nodemon": "1.18.9",
+    "prettier": "1.16.1"
+  }
+}
