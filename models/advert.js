@@ -45,12 +45,7 @@ const advertModelSchema = new Schema(
     price: {
       type: Number,
       required: true,
-      validate: {
-        validator(v) {
-          return v > 0;
-        },
-        message: props => `${props.value} is not a valid price!`,
-      },
+      min: 1,
     },
     author: {
       type: Schema.Types.ObjectId,
@@ -60,6 +55,7 @@ const advertModelSchema = new Schema(
   {
     timestamps: {
       createdAt: 'created',
+      updatedAt: 'modified',
     },
   }
 );
