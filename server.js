@@ -7,9 +7,6 @@ const mongoose = require('mongoose');
 const User = require('./models/user');
 const Advert = require('./models/advert');
 
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connectionDB error:'));
-
 const app = express();
 const users = require('./routes/users');
 const adverts = require('./routes/adverts');

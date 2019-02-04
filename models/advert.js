@@ -64,5 +64,4 @@ const advertModelSchema = new Schema(
   }
 );
 
-// Export model.
 module.exports = mongoose.model('Advert', advertModelSchema);
