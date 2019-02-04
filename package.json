@@ -27,6 +27,7 @@
     "prettier": "1.16.1"
   },
   "dependencies": {
+    "async": "2.6.1",
     "express": "4.16.4",
     "getconfig": "4.5.0",
     "mongoose": "5.4.8"
