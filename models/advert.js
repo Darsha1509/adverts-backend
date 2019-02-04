@@ -58,11 +58,10 @@ const advertModelSchema = new Schema(
     },
   },
   {
-    timestamp: {
-      createdAt: 'created_at',
+    timestamps: {
+      createdAt: 'created',
     },
   }
 );
 
-// Export model.
 module.exports = mongoose.model('Advert', advertModelSchema);

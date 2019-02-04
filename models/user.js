@@ -55,11 +55,12 @@ const userModelSchema = new Schema({
     type: String,
     validate: {
       validator(v) {
-        return /\+375 29 2\d{2} \d{2} \d{2}/.test(v);
+        return /^\+375 \(\d{2}\) \d{3} \d{2} \d{2}$/.test(v);
       },
       message: props => `${props.value} is not a valid phone!`,
     },
   },
+  adverts: [{ type: Schema.Types.ObjectId, ref: 'Advert' }],
 });
 
 // Export model.
