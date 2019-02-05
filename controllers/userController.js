@@ -42,12 +42,14 @@ exports.getUser = async function getUser(req, res, next) {
 
 exports.updateUser = async function updateUser(req, res, next) {
   try {
-    const userId = req.params.id;
-    const user = User.findById(userId);
-    if (!user) {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    );
+    if (!updatedUser) {
       return next(Boom.notFound());
     }
-    const updatedUser = await User.findByIdAndUpdate(userId, { $set: req.body }, { new: true });
     return res.json({ updatedUser });
   } catch (e) {
     return next(e);
@@ -56,12 +58,10 @@ exports.updateUser = async function updateUser(req, res, next) {
 
 exports.deleteUser = async function deleteUser(req, res, next) {
   try {
-    const userId = req.params.id;
-    const user = await User.findById(userId);
-    if (!user) {
+    const deletedUser = await User.findByIdAndRemove(req.params.id);
+    if (!deletedUser) {
       return next(Boom.notFound());
     }
-    const deletedUser = await User.findByIdAndRemove(userId);
     return res.json({ deletedUser });
   } catch (e) {
     return next(e);

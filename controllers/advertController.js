@@ -69,16 +69,14 @@ exports.updateAdvert = async function updateAdvert(req, res, next) {
     if (req.body.views) {
       delete req.body.views;
     }
-    const advertId = req.params.id;
-    const advert = await Advert.findById(advertId);
-    if (!advert) {
-      return next(Boom.notFound());
-    }
     const updatedAdvert = await Advert.findByIdAndUpdate(
-      advertId,
+      req.params.id,
       { $set: req.body },
       { new: true }
     );
+    if (!updatedAdvert) {
+      return next(Boom.notFound());
+    }
     return res.json({ updatedAdvert });
   } catch (e) {
     return next(e);
@@ -87,12 +85,10 @@ exports.updateAdvert = async function updateAdvert(req, res, next) {
 
 exports.deleteAdvert = async function deleteAdvert(req, res, next) {
   try {
-    const advertId = req.params.id;
-    const advert = await Advert.findById(advertId);
-    if (!advert) {
+    const deletedAdvert = await Advert.findByIdAndRemove(req.params.id);
+    if (!deletedAdvert) {
       return next(Boom.notFound());
     }
-    const deletedAdvert = await Advert.findByIdAndRemove(advertId);
     return res.json({ deletedAdvert });
   } catch (e) {
     return next(e);
