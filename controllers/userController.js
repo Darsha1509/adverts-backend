@@ -18,6 +18,9 @@ exports.createUser = async function createUser(req, res, next) {
 exports.getUsers = async function getUsers(req, res, next) {
   try {
     const users = await User.find();
+    if (!users) {
+      return next(Boom.notFound());
+    }
     return res.json({ users });
   } catch (e) {
     return next(e);
@@ -31,7 +34,6 @@ exports.getUser = async function getUser(req, res, next) {
     if (!user) {
       return next(Boom.notFound());
     }
-
     return res.json({ user });
   } catch (e) {
     return next(e);
