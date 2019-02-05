@@ -29,15 +29,15 @@ const advertModelSchema = new Schema(
       type: String,
       enum: [
         'The property',
-        'Auto & transport',
+        'Auto and transport',
         'Equipment',
-        'Fashion & Style',
-        'Everything for children & mothers',
+        'Fashion and Style',
+        'Everything for children and mothers',
         'Housing',
-        'Repair & construction',
+        'Repair and construction',
         'Garden',
-        'Hobby, sport & tourism',
-        'Wedding, bussiness & study',
+        'Hobby, sport and tourism',
+        'Wedding, bussiness and study',
         'Services',
         'Other',
       ],
@@ -50,6 +50,10 @@ const advertModelSchema = new Schema(
     author: {
       type: Schema.Types.ObjectId,
       ref: 'User',
+    },
+    views: {
+      type: Number,
+      default: 0,
     },
   },
   {
