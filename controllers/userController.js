@@ -1,52 +1,75 @@
 const Boom = require('boom');
 const User = require('../models/user');
 
-// залогиниться
 exports.login = function login(req, res, next) {
   res.send('NOT IMPLEMENTED: Login process');
 };
 
-// создать пользователя
-exports.createUser = function createUser(req, res, next) {
-  res.send('NOT IMPLEMENTED: Create user');
+exports.createUser = async function createUser(req, res, next) {
+  try {
+    const user = new User(req.body);
+    await user.save();
+    return res.json({ user });
+  } catch (e) {
+    return next(e);
+  }
 };
 
-// показать список всех пользователей
 exports.getUsers = async function getUsers(req, res, next) {
   try {
     const users = await User.find();
+    if (!users) {
+      return next(Boom.notFound());
+    }
     return res.json({ users });
   } catch (e) {
-    Boom.boomify(e, { statusCode: 404 });
     return next(e);
   }
 };
 
-// показать пользователя
 exports.getUser = async function getUser(req, res, next) {
   try {
     const userId = req.params.id;
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).populate({
+      path: 'adverts',
+      select: ['title', 'description'],
+    });
+
+    if (!user) {
+      return next(Boom.notFound());
+    }
+
     return res.json({ user });
   } catch (e) {
-    Boom.boomify(e, { statusCode: 404 });
     return next(e);
   }
 };
 
-// обновить пользователя
 exports.updateUser = async function updateUser(req, res, next) {
-  res.send('NOT IMPLEMENTED: Update user');
+  try {
+    const query = { _id: req.params.id };
+    const user = User.find(query);
+    if (!user) {
+      return next(Boom.notFound());
+    }
+    await User.findOneAndUpdate(query, { $set: req.body });
+    const updatedUser = await User.findById(req.params.id);
+    return res.json({ updatedUser });
+  } catch (e) {
+    return next(e);
+  }
 };
 
-// удалить пользователя
 exports.deleteUser = async function deleteUser(req, res, next) {
   try {
     const userId = req.params.id;
-    const user = await User.deleteOne({ _id: userId });
+    const user = await User.find({ _id: userId });
+    if (!user) {
+      return next(Boom.notFound());
+    }
+    await User.findOneAndRemove({ _id: userId });
     return res.json({ user });
   } catch (e) {
-    Boom.boomify(e, { statusCode: 404 });
     return next(e);
   }
 };
