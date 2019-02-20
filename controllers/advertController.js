@@ -71,22 +71,26 @@ exports.getAdvert = async function getAdvert(req, res, next) {
 exports.updateAdvert = async function updateAdvert(req, res, next) {
   try {
     const advert = await Advert.findById(req.params.id);
-    if ((await advert.author).toString() === req.user.id) {
-      if (req.body.views) {
-        delete req.body.views;
-      }
+    if ((await advert.author).toString() !== req.user.id) {
+      const error = new Error('Forbidden');
+      Boom.boomify(error, { statusCode: 403 });
 
-      const updatedAdvert = await Advert.findByIdAndUpdate(
-        req.params.id,
-        { $set: req.body },
-        { new: true }
-      );
-      if (!updatedAdvert) {
-        return next(Boom.notFound());
-      }
-      return res.json({ updatedAdvert });
+      return next(error);
     }
-    return res.send('Impossible to update');
+
+    if (req.body.views) {
+      delete req.body.views;
+    }
+
+    const updatedAdvert = await Advert.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    );
+    if (!updatedAdvert) {
+      return next(Boom.notFound());
+    }
+    return res.json({ updatedAdvert });
   } catch (e) {
     return next(e);
   }
@@ -95,18 +99,21 @@ exports.updateAdvert = async function updateAdvert(req, res, next) {
 exports.deleteAdvert = async function deleteAdvert(req, res, next) {
   try {
     const advert = await Advert.findById(req.params.id);
-    if ((await advert.author).toString() === req.user.id) {
-      const deletedAdvert = await Advert.findByIdAndRemove(req.params.id);
-      if (!deletedAdvert) {
-        return next(Boom.notFound());
-      }
-      const adverts = await Advert.find().populate({
-        path: 'author',
-        select: ['username', 'phone', 'email'],
-      });
-      return res.json({ adverts });
+    if ((await advert.author).toString() !== req.user.id) {
+      const error = new Error('Forbidden');
+      Boom.boomify(error, { statusCode: 403 });
+
+      return next(error);
     }
-    return res.send('Impossible to delete');
+    const deletedAdvert = await Advert.findByIdAndRemove(req.params.id);
+    if (!deletedAdvert) {
+      return next(Boom.notFound());
+    }
+    const adverts = await Advert.find().populate({
+      path: 'author',
+      select: ['username', 'phone', 'email'],
+    });
+    return res.json({ adverts });
   } catch (e) {
     return next(e);
   }

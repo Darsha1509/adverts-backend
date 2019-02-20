@@ -102,15 +102,18 @@ exports.updateUser = async function updateUser(req, res, next) {
 
 exports.deleteUser = async function deleteUser(req, res, next) {
   try {
-    if (req.user.id === req.params.id) {
-      const deletedUser = await User.findByIdAndRemove(req.params.id);
-      if (!deletedUser) {
-        return next(Boom.notFound());
-      }
-      const users = await User.find().populate({ path: 'adverts', select: 'title' });
-      return res.json({ users });
+    if (req.user.id !== req.params.id) {
+      const error = new Error('Forbidden');
+      Boom.boomify(error, { statusCode: 403 });
+
+      return next(error);
     }
-    return next(new Error('Error during deleting'));
+    const deletedUser = await User.findByIdAndRemove(req.params.id);
+    if (!deletedUser) {
+      return next(Boom.notFound());
+    }
+    const users = await User.find().populate({ path: 'adverts', select: 'title' });
+    return res.json({ users });
   } catch (e) {
     return next(e);
   }
