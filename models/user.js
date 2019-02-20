@@ -1,8 +1,7 @@
-const crypto = require('crypto');
-const util = require('util');
+const jwt = require('jsonwebtoken');
 const config = require('getconfig');
-const hashPassword = require('../services/hashPassword');
 const mongoose = require('mongoose');
+const hashPassword = require('../services/hashPassword');
 
 const Schema = mongoose.Schema;
 
@@ -89,6 +88,19 @@ const userModelSchema = new Schema(
     },
   }
 );
+
+userModelSchema.statics.comparePassword = async function (password) {
+  return this.hashedPassword === (await hashPassword(password));
+};
+
+userModelSchema.statics.findUserByToken = async function (token) {
+  const userId = jwt.verify(token, config.secret, (err, decoded) => {
+    return decoded.id;
+  });
+  const user = await this.findById(userId);
+
+  return user;
+};
 
 userModelSchema.pre('save', async function preSave() {
   this.hashedPassword = await hashPassword(this.hashedPassword);

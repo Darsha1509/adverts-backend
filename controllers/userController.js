@@ -12,30 +12,31 @@ exports.login = async function login(req, res, next) {
   try {
     const user = await User.findOne({ username });
     if (!user) {
-      return res.sendStatus(401);
+      return next(Boom.notFound("such user doesn't exist"));
     }
-    if (user.hashedPassword === (await hashPassword(password))) {
-      const token = await generateToken(user.id);
-      user.tokens.push(token);
-      await User.findByIdAndUpdate(user.id, { $set: user }, { new: true });
-      return res.send(user);
+    if (User.comparePassword(password)) {
+      const token = await generateToken({ id: user.id });
+      const updatedUser = await User.findByIdAndUpdate(
+        user.id,
+        { $addToSet: { tokens: token } },
+        { new: true }
+      );
+      return res.json({ updatedUser });
     }
-    return next(Boom.notFound());
+    return next(Boom.unauthorized('invalid password'));
   } catch (err) {
-    return res.sendStatus(500);
+    return next(Boom.badImplementation());
   }
 };
 
 exports.logout = async function login(req, res, next) {
   try {
-    const user = await User.findById(req.user.id);
     const token = req.headers.authentication;
-    user.tokens.forEach((tokenItem, index, tokens) => {
-      if (tokenItem === token) {
-        tokens.splice(index, 1);
-      }
-    });
-    await User.findByIdAndUpdate(user.id, { $set: user }, { new: true });
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $pull: { tokens: token } },
+      { new: true }
+    );
     return res.json({ user });
   } catch (e) {
     return next(e);
@@ -79,18 +80,21 @@ exports.getUser = async function getUser(req, res, next) {
 
 exports.updateUser = async function updateUser(req, res, next) {
   try {
-    if (req.user.id === req.params.id) {
-      const updatedUser = await User.findByIdAndUpdate(
-        req.params.id,
-        { $set: req.body },
-        { new: true }
-      );
-      if (!updatedUser) {
-        return next(Boom.notFound());
-      }
-      return res.json({ updatedUser });
+    if (req.user.id !== req.params.id) {
+      const error = new Error('Forbidden');
+      Boom.boomify(error, { statusCode: 403 });
+
+      return next(error);
     }
-    return next(new Error('Error during updating'));
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    );
+    if (!updatedUser) {
+      return next(Boom.notFound());
+    }
+    return res.json({ updatedUser });
   } catch (e) {
     return next(e);
   }
