@@ -1,3 +1,7 @@
+const crypto = require('crypto');
+const util = require('util');
+const config = require('getconfig');
+const hashPassword = require('../services/hashPassword');
 const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
@@ -16,6 +20,11 @@ const userModelSchema = new Schema(
         },
         message: props => `${props.value} is not a valid username!`,
       },
+    },
+    hashedPassword: {
+      type: String,
+      minlength: 8,
+      alias: 'password',
     },
     firstName: {
       type: String,
@@ -56,20 +65,34 @@ const userModelSchema = new Schema(
       type: String,
       validate: {
         validator(v) {
-          return /^\+375 \(\d{2}\) \d{3} \d{2} \d{2}$/.test(v);
+          return /^\+375 \d{2} \d{3} \d{2} \d{2}$/.test(v);
         },
         message: props => `${props.value} is not a valid phone!`,
       },
     },
     adverts: [{ type: Schema.Types.ObjectId, ref: 'Advert' }],
+    tokens: {
+      type: Array,
+    },
   },
   {
     timestamps: {
       createdAt: 'created',
       updatedAt: 'modified',
     },
+    toJSON: {
+      transform(doc, ret) {
+        return ret;
+        const { hashedPassword, __v, ...newRet } = ret;
+        return newRet;
+      },
+    },
   }
 );
+
+userModelSchema.pre('save', async function preSave() {
+  this.hashedPassword = await hashPassword(this.hashedPassword);
+});
 
 // Export model.
 module.exports = mongoose.model('User', userModelSchema);

@@ -11,7 +11,7 @@ const advertModelSchema = new Schema(
       required: true,
       validate: {
         validator(v) {
-          return /^[a-zA-Z0-9.-]*$/.test(v);
+          return /^[a-zA-Z0-9. -]*$/.test(v);
         },
         message: props => `${props.value} is not a valid title!`,
       },
@@ -20,7 +20,7 @@ const advertModelSchema = new Schema(
       type: String,
       validate: {
         validator(v) {
-          return /^[a-zA-Z0-9.-]*$/.test(v);
+          return /^[a-zA-Z0-9. -]*$/.test(v);
         },
         message: props => `${props.value} is not a valid description!`,
       },

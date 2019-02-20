@@ -15,6 +15,7 @@ app.use(users);
 app.use(adverts);
 app.use(handlerErr.handlerErr);
 
+mongoose.set('useCreateIndex', true);
 mongoose.connect(config.mongoDB, { useNewUrlParser: true }, () => {
   app.listen(config.port, config.host, () => {
     console.log(`Server running at http://${config.host}:${config.port}/`);

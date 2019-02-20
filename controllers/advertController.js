@@ -4,14 +4,16 @@ const User = require('../models/user');
 
 exports.createAdvert = async function createAdvert(req, res, next) {
   try {
-    const user = await User.findById(req.body.author);
+    const user = await User.findById(req.user.id);
+    console.log(user);
     if (!user) {
       return next(Boom.notFound());
     }
     const advert = new Advert(req.body);
+    advert.author = user.id;
     user.adverts.push(advert.id);
     await advert.save();
-    await user.save();
+    await await User.findByIdAndUpdate(user.id, { $set: user }, { new: true });
     return res.json({ advert });
   } catch (e) {
     next(e);
@@ -43,7 +45,9 @@ exports.getAdverts = async function getAdverts(req, res, next) {
         }
       });
     }
-    const adverts = await Advert.find(query).sort(sort);
+    const adverts = await Advert.find(query)
+      .sort(sort)
+      .populate({ path: 'author', select: ['username', 'phone', 'email'] });
     return res.json({ adverts });
   } catch (e) {
     return next(e);
@@ -66,18 +70,23 @@ exports.getAdvert = async function getAdvert(req, res, next) {
 
 exports.updateAdvert = async function updateAdvert(req, res, next) {
   try {
-    if (req.body.views) {
-      delete req.body.views;
+    const advert = await Advert.findById(req.params.id);
+    if ((await advert.author).toString() === req.user.id) {
+      if (req.body.views) {
+        delete req.body.views;
+      }
+
+      const updatedAdvert = await Advert.findByIdAndUpdate(
+        req.params.id,
+        { $set: req.body },
+        { new: true }
+      );
+      if (!updatedAdvert) {
+        return next(Boom.notFound());
+      }
+      return res.json({ updatedAdvert });
     }
-    const updatedAdvert = await Advert.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true }
-    );
-    if (!updatedAdvert) {
-      return next(Boom.notFound());
-    }
-    return res.json({ updatedAdvert });
+    return res.send('Impossible to update');
   } catch (e) {
     return next(e);
   }
@@ -85,11 +94,19 @@ exports.updateAdvert = async function updateAdvert(req, res, next) {
 
 exports.deleteAdvert = async function deleteAdvert(req, res, next) {
   try {
-    const deletedAdvert = await Advert.findByIdAndRemove(req.params.id);
-    if (!deletedAdvert) {
-      return next(Boom.notFound());
+    const advert = await Advert.findById(req.params.id);
+    if ((await advert.author).toString() === req.user.id) {
+      const deletedAdvert = await Advert.findByIdAndRemove(req.params.id);
+      if (!deletedAdvert) {
+        return next(Boom.notFound());
+      }
+      const adverts = await Advert.find().populate({
+        path: 'author',
+        select: ['username', 'phone', 'email'],
+      });
+      return res.json({ adverts });
     }
-    return res.json({ deletedAdvert });
+    return res.send('Impossible to delete');
   } catch (e) {
     return next(e);
   }
